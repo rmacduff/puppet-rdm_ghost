@@ -40,7 +40,7 @@ define rdm_ghost (
     blog           => $name,
     port           => $port,
     source         => "https://github.com/TryGhost/Ghost/releases/download/0.6.4/Ghost-0.6.4.zip",
-    url            => "https://${hostname}$/{path}",
+    url            => "https://${hostname}/${path}",
     mail_transport => 'SMTP',
     mail_from      => $email,
     mail_options   => $mail_options,
