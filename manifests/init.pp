@@ -20,7 +20,7 @@ define rdm_ghost (
     $_subdomain = $subdomain
   }
  
-  if $_subdomain == '' {
+  if ! empty($_subdomain) {
     $hostname = $domain
   } else {
     $hostname = "${_subdomain}.${domain}"
