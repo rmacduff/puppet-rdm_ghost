@@ -1,9 +1,10 @@
 define rdm_ghost (
   $port      = '2368',
   $path      = '',
-  $subdomain = undef,
   $domain    = undef,
   $email     = undef,
+  $ssl_cert  = undef,
+  $ssl_key   = undef,
 ) {
 
   if $domain == undef {
@@ -14,25 +15,21 @@ define rdm_ghost (
     fail("\$email must be specified")
   }
 
-  if $subdomain == undef {
-    $_subdomain = $name
-  } else {
-    $_subdomain = $subdomain
+  if $ssl_cert == undef {
+    fail("\$ssl_cert must be specified")
   }
  
-  if ! empty($_subdomain) {
-    $hostname = $domain
-  } else {
-    $hostname = "${_subdomain}.${domain}"
+  if $ssl_key == undef {
+    fail("\$ssl_cert must be specified")
   }
- 
+
   $mail_options = {
     host => 'smtp.mandrillapp.com',
     service => 'mandrill',
     port    => 587,
     auth => {
-      user => 'ross@macduff.ca',
-      pass => 'op3a7jXMdFdYzZuQyH8aZw',
+      user => hiera('mandrill::username'),
+      pass => hiera('mandrill::apikey'),
     },
   }
 
@@ -40,7 +37,7 @@ define rdm_ghost (
     blog           => $name,
     port           => $port,
     source         => "https://github.com/TryGhost/Ghost/releases/download/0.6.4/Ghost-0.6.4.zip",
-    url            => "https://${hostname}/${path}",
+    url            => "https://${domain}/${path}",
     mail_transport => 'SMTP',
     mail_from      => $email,
     mail_options   => $mail_options,
@@ -51,10 +48,10 @@ define rdm_ghost (
     members => ["localhost:${port}"],
   }
 
-  ::nginx::resource::vhost { "${hostname}":
+  ::nginx::resource::vhost { "${domain}":
     ssl => true,
-    ssl_cert => '/etc/pki/tls/certs/_.macduff.ca-bundle.crt',
-    ssl_key  => '/etc/pki/tls/private/_.macduff.ca.key',
+    ssl_cert => "/etc/pki/tls/certs/${ssl_cert}",
+    ssl_key  => "/etc/pki/tls/private/${ssl_key}",
     ssl_dhparam => '/etc/pki/tls/certs/dhparams.pem',
     use_default_location => false,
     rewrite_www_to_non_www => true,
@@ -62,7 +59,7 @@ define rdm_ghost (
   }
 
   ::nginx::resource::location { $name:
-    vhost => "${hostname}",
+    vhost => "${domain}",
     location => '/',
     proxy => "http://${name}/",
     ssl => true,
