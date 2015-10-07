@@ -28,7 +28,7 @@ define rdm_ghost (
     service => 'mandrill',
     port    => 587,
     auth => {
-      user => hiera('postfix_rdm::username'),
+      user => hiera('postfix_rdm::relayhost_username'),
       pass => hiera('postfix_rdm::relayhost_password'),
     },
   }
